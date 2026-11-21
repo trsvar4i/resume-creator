@@ -10,7 +10,7 @@ export async function POST(req: NextRequest) {
     if (!isLLMConfigured()) {
       // Smart fallback mode without requiring API key
       const bullets = generateFallbackBullets(position, company, rawDescription, tone);
-      return NextResponse.json({ bullets });
+      return NextResponse.json({ bullets, fallback: true });
     }
 
     const systemPrompt = `You are an expert executive resume writer and career consultant.

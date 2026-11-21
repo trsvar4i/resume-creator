@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
         education,
         skills
       );
-      return NextResponse.json(fallback);
+      return NextResponse.json({ ...fallback, fallback: true });
     }
 
     const systemPrompt = `You are an elite career strategist, executive resume editor, and HR specialist.
