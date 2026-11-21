@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { callLLMJson, isLLMConfigured } from '@/lib/llm';
+import { callLLMJson, isLLMConfigured, parseJsonLoose } from '@/lib/llm';
 import { generateFallbackAIContent, type ExperienceInput, type EducationInput } from '@/lib/fallbackAI';
+
+// Reasoning models can take a while; Vercel's default limit would cut them off
+export const maxDuration = 30;
 
 export async function POST(req: NextRequest) {
   try {
@@ -71,11 +74,11 @@ Strict Rules:
       const content = await callLLMJson({
         system: systemPrompt,
         user: JSON.stringify(sanitizedPayload),
-        maxTokens: 800,
+        maxTokens: 3000,
       });
       if (!content) throw new Error('No LLM configured');
 
-      const parsed = JSON.parse(content);
+      const parsed = parseJsonLoose(content) as Record<string, unknown>;
       const toStrings = (v: unknown): string[] =>
         Array.isArray(v) ? v.filter((x): x is string => typeof x === 'string' && x.trim() !== '') : [];
       if (typeof parsed.summary !== 'string' || !parsed.summary.trim()) {

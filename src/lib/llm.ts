@@ -18,13 +18,26 @@ function openAiCompatibleKey(): string | undefined {
   return (process.env.OPENAI_API_KEY || process.env.DEEPSEEK_FREE_KEY)?.trim() || undefined;
 }
 
+/** Parses the model's JSON even when it is wrapped in a code fence or has text around it. */
+export function parseJsonLoose(text: string): unknown {
+  const cleaned = text.replace(/^\s*```(?:json)?/i, '').replace(/```\s*$/i, '').trim();
+  try {
+    return JSON.parse(cleaned);
+  } catch {
+    const start = cleaned.indexOf('{');
+    const end = cleaned.lastIndexOf('}');
+    if (start >= 0 && end > start) return JSON.parse(cleaned.slice(start, end + 1));
+    throw new Error('Model did not return JSON');
+  }
+}
+
 export function isLLMConfigured(): boolean {
   return Boolean(process.env.GEMINI_API_KEY || process.env.GROQ_API_KEY || openAiCompatibleKey());
 }
 
 /** Calls the configured model and returns the raw JSON text it produced (null = no key configured). */
 export async function callLLMJson(req: LLMRequest): Promise<string | null> {
-  const { system, user, maxTokens = 800, temperature = 0.7, timeoutMs = 15000 } = req;
+  const { system, user, maxTokens = 2000, temperature = 0.7, timeoutMs = 25000 } = req;
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), timeoutMs);
 
