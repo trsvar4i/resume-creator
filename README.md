@@ -1,36 +1,77 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Конструктор резюме с ИИ
 
-## Getting Started
+Веб-приложение, в котором за пять коротких шагов собирается резюме: личные данные и фото, должность и навыки, опыт, образование, а затем выбор шаблона и скачивание. ИИ помогает формулировать достижения, раздел «О себе» и подбирает навыки. Всё работает прямо в браузере, данные хранятся на устройстве пользователя.
 
-First, run the development server:
+**Демо:** публикуется на GitHub Pages (адрес вида `https://<аккаунт>.github.io/resume-creator/`).
+
+## Возможности
+
+- **Пять шагов** с автосохранением черновика в браузере; на телефоне каждый шаг разбит на короткие экраны без прокрутки.
+- **Три шаблона** (Классика, Модерн, Минимал), шесть акцентных цветов, плотность вёрстки, светлая и тёмная тема.
+- **ИИ-помощник:** формулирует достижения по описанию обязанностей, пишет «О себе» и сильные стороны в трёх тонах. Результат сначала показывается, и в резюме попадает только после «Принять».
+- **Скачивание:** PDF A4 для печати и Mobile PDF 108×234 мм для телефона. PDF **текстовый** (текст выделяется, ищется и читается системами отбора резюме), ссылки кликабельны. Также DOCX для правок в Word.
+- **Проверка заполненности** перед скачиванием, с переходом к нужному шагу.
+- **Перенос на другое устройство без сервера:** резюме упаковывается в ссылку (данные после `#` никуда не отправляются) и в QR-код. Фото в ссылку не входит.
+- Форматы телефонов и города по странам СНГ и ближайших соседей, проверка даты рождения.
+
+## Технологии
+
+Next.js (App Router), React, TypeScript, Tailwind CSS, Zustand, компоненты в стиле shadcn/ui (Radix UI), jsPDF (векторный PDF), docx, qrcode.
+
+## Запуск
+
+Нужен Node.js 20 или новее.
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Откройте http://localhost:3000.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### ИИ (необязательно)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Без ключа приложение работает на встроенных шаблонных формулировках. Чтобы включить настоящий ИИ:
 
-## Learn More
+```bash
+cp .env.example .env
+```
 
-To learn more about Next.js, take a look at the following resources:
+и впишите ключ в `.env` (поддерживаются Gemini, Groq и любой OpenAI-совместимый провайдер, см. комментарии в файле). Файл `.env` в репозиторий не попадает. После изменения перезапустите `npm run dev`.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Публикация на GitHub Pages
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Сайт на Pages статический, серверных маршрутов там нет. Workflow [`.github/workflows/pages.yml`](.github/workflows/pages.yml) сам собирает статическую версию (без маршрутов `/api`) и публикует её при каждом push в `main`.
 
-## Deploy on Vercel
+Что включить один раз: в репозитории **Settings → Pages → Build and deployment → Source: GitHub Actions**.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+На Pages ИИ-вызовы к серверу невозможны, поэтому приложение автоматически использует шаблонные формулировки и честно сообщает об этом в интерфейсе. Ключи ИИ на Pages не нужны и не используются: их нельзя безопасно хранить в статическом сайте.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Локально проверить статическую сборку (без папки `src/app/api`, как в CI):
+
+```bash
+STATIC_EXPORT=1 NEXT_PUBLIC_BASE_PATH=/resume-creator npm run build
+```
+
+Результат появится в папке `out/`.
+
+## Приватность
+
+- Резюме хранится только в `localStorage` вашего браузера.
+- Ссылка для переноса содержит данные резюме в открытом виде (после `#`, на сервер они не уходят): не публикуйте её в общих чатах.
+- При включённом ИИ текст описаний отправляется выбранному провайдеру; имя и контакты в запрос не входят.
+
+## Структура
+
+```
+src/app/           страницы (главная, /builder) и серверные маршруты ИИ (api/ai/*)
+src/components/    шаги мастера, шаблоны резюме, панель настроек, UI-компоненты
+src/store/         состояние и автосохранение (Zustand)
+src/utils/         экспорт PDF/DOCX, проверка заполненности, перенос ссылкой, форматы
+src/lib/           вызовы ИИ и запасные шаблоны
+public/fonts/      шрифты резюме (Inter, PT Serif)
+```
+
+## Лицензии и благодарности
+
+Шрифты Inter и PT Serif распространяются по SIL Open Font License. Базовые UI-компоненты в `src/components/ui` взяты из набора [aliakseych/components](https://github.com/aliakseych/components) (в стиле shadcn/ui); у этого набора на момент публикации не указана лицензия: перед открытым распространением стоит уточнить условия у автора.
