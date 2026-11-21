@@ -13,8 +13,13 @@ interface LLMRequest {
   timeoutMs?: number;
 }
 
+/** Key for an OpenAI-compatible provider. DEEPSEEK_FREE_KEY is accepted too (the name used on the Vercel project). */
+function openAiCompatibleKey(): string | undefined {
+  return (process.env.OPENAI_API_KEY || process.env.DEEPSEEK_FREE_KEY)?.trim() || undefined;
+}
+
 export function isLLMConfigured(): boolean {
-  return Boolean(process.env.GEMINI_API_KEY || process.env.GROQ_API_KEY || process.env.OPENAI_API_KEY);
+  return Boolean(process.env.GEMINI_API_KEY || process.env.GROQ_API_KEY || openAiCompatibleKey());
 }
 
 /** Calls the configured model and returns the raw JSON text it produced (null = no key configured). */
@@ -54,7 +59,7 @@ export async function callLLMJson(req: LLMRequest): Promise<string | null> {
     }
 
     const groqKey = process.env.GROQ_API_KEY?.trim();
-    const openaiKey = process.env.OPENAI_API_KEY?.trim();
+    const openaiKey = openAiCompatibleKey();
     const apiKey = groqKey || openaiKey;
     if (!apiKey) return null;
 
