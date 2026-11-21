@@ -1,26 +1,147 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+
+/* The app's dark mode is the data-ui-theme attribute (not prefers-color-scheme) */
+@custom-variant dark (&:is([data-ui-theme="dark"], [data-ui-theme="dark"] *));
+
+/* Library components (shadcn-style) read these tokens; they are mapped onto the app's own --ui-* palette,
+   so light/dark and every colour stay defined in one place. */
+@theme inline {
+  --color-background: var(--ui-bg-surface);
+  --color-foreground: var(--ui-text-primary);
+  --color-card: var(--ui-bg-surface);
+  --color-card-foreground: var(--ui-text-primary);
+  --color-popover: var(--ui-bg-surface);
+  --color-popover-foreground: var(--ui-text-primary);
+  --color-primary: var(--ui-accent-primary);
+  --color-primary-foreground: var(--ui-accent-fg);
+  --color-secondary: var(--ui-bg-subtle);
+  --color-secondary-foreground: var(--ui-text-primary);
+  --color-muted: var(--ui-bg-subtle);
+  --color-muted-foreground: var(--ui-text-muted);
+  --color-accent: var(--ui-bg-subtle);
+  --color-accent-foreground: var(--ui-text-primary);
+  --color-destructive: var(--ui-semantic-danger);
+  --color-border: var(--ui-border-default);
+  --color-input: var(--ui-border-strong);
+  --color-ring: var(--ui-semantic-info);
+  --color-canvas: var(--ui-bg-canvas);
+}
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* UI tokens — Light theme */
+  --ui-bg-canvas: #F8F9FA;
+  --ui-bg-surface: #FFFFFF;
+  --ui-bg-subtle: #F1F3F5;
+  --ui-border-default: #E2E5E9;
+  --ui-border-strong: #CBD0D8;
+  --ui-text-primary: #111318;
+  --ui-text-secondary: #525866;
+  --ui-text-muted: #868E9C;
+  --ui-accent-primary: #18181B;
+  --ui-accent-fg: #FFFFFF;
+  --ui-semantic-info: #2563EB;
+  --ui-semantic-success: #16A34A;
+  --ui-semantic-danger: #DC2626;
+
+  /* Resume canvas defaults (graphite) */
+  --color-primary: #18181B;
+  --color-primary-light: #F4F4F5;
+  --color-border: #D4D4D8;
+  --color-text-main: #0f172a;
+  --color-text-muted: #475569;
+  --color-bg: #ffffff;
+
+  /* Radii */
+  --radius-none: 0px;
+  --radius-xs: 2px;
+  --radius-sm: 4px;
+  --radius-md: 6px;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+[data-ui-theme="dark"] {
+  --ui-bg-canvas: #0D0E11;
+  --ui-bg-surface: #14161A;
+  --ui-bg-subtle: #1C1F24;
+  --ui-border-default: #262A32;
+  --ui-border-strong: #383E4A;
+  --ui-text-primary: #F3F4F6;
+  --ui-text-secondary: #9CA3AF;
+  --ui-text-muted: #6B7280;
+  --ui-accent-primary: #F4F4F5;
+  --ui-accent-fg: #09090B;
+  --ui-semantic-info: #3B82F6;
+  --ui-semantic-success: #22C55E;
+  --ui-semantic-danger: #EF4444;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* Resume canvas theme variants */
+[data-theme="graphite"] { --color-primary: #18181B; --color-primary-light: #F4F4F5; --color-border: #D4D4D8; }
+[data-theme="navy"]     { --color-primary: #3F6592; --color-primary-light: #EBF1F7; --color-border: #CBD5E1; }
+[data-theme="emerald"]  { --color-primary: #065F46; --color-primary-light: #ECFDF5; --color-border: #A7F3D0; }
+[data-theme="burgundy"] { --color-primary: #881337; --color-primary-light: #FFF1F2; --color-border: #FECDD3; }
+[data-theme="indigo"]   { --color-primary: #3730A3; --color-primary-light: #EEF2FF; --color-border: #C7D2FE; }
+[data-theme="olive"]    { --color-primary: #3F4E2C; --color-primary-light: #F4F6F0; --color-border: #D3DBC8; }
+
+* { box-sizing: border-box; }
+
+body {
+  background: var(--ui-bg-canvas);
+  color: var(--ui-text-primary);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-variant-numeric: tabular-nums;
+}
+
+.resume-canvas {
+  background: var(--color-bg);
+  color: var(--color-text-main);
+}
+
+/* Print & PDF styling */
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 12mm 15mm;
+  }
+
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    overflow: visible !important;
+  }
+
+  header, footer, nav, aside, .inspector-panel, button, [role="navigation"] {
+    display: none !important;
+  }
+
+  .print-only-canvas {
+    width: 100% !important;
+    min-height: auto !important;
+    box-shadow: none !important;
+    transform: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  h2, h3 {
+    break-after: avoid !important;
+    page-break-after: avoid !important;
+  }
+
+  section, .experience-item, .education-item {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* Wheel picker sheet (country / city) */
+.wheel-scroller::-webkit-scrollbar { display: none; }
+@keyframes wheel-sheet-up { from { transform: translateY(100%); } to { transform: translateY(0); } }
+@keyframes wheel-fade-in { from { opacity: 0; } to { opacity: 1; } }
+.wheel-sheet { animation: wheel-sheet-up 0.28s cubic-bezier(0.2, 0.8, 0.2, 1); }
+.wheel-backdrop { animation: wheel-fade-in 0.2s ease-out; }
+@media (prefers-reduced-motion: reduce) {
+  .wheel-sheet, .wheel-backdrop { animation: none; }
 }
+
+/* Resume fonts (@font-face) are declared in layout.tsx, because their URLs need the site's base path. */
